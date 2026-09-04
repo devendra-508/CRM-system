@@ -16,8 +16,9 @@ export const pool = new Pool({
   },
 });
 
-pool.on("connect", () => {
+pool.on("connect", (client) => {
   console.log("Connected to PostgreSQL database");
+  client.query("SET search_path TO public");
 });
 
 pool.on("error", (err) => {
