@@ -15,7 +15,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Simple request logger — helpful while developing
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
@@ -25,18 +24,32 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "CRM backend running" });
 });
 
+app.get("/api/debug-db", async (req, res) => {
+  try {
+    const { pool } = await import("./config/db.js");
+    const dbInfo = await pool.query("SELECT current_database(), current_user, current_schema()");
+    const tables = await pool.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+    );
+    res.json({
+      database_info: dbInfo.rows[0],
+      tables_visible: tables.rows,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
 app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/purchases", purchaseRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong" });
