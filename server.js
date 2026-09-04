@@ -24,22 +24,6 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "CRM backend running" });
 });
 
-app.get("/api/debug-db", async (req, res) => {
-  try {
-    const { pool } = await import("./config/db.js");
-    const dbInfo = await pool.query("SELECT current_database(), current_user, current_schema()");
-    const tables = await pool.query(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-    );
-    res.json({
-      database_info: dbInfo.rows[0],
-      tables_visible: tables.rows,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message, stack: err.stack });
-  }
-});
-
 app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/purchases", purchaseRoutes);
