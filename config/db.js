@@ -14,7 +14,6 @@ export const pool = new Pool({
   ssl: {
     rejectUnauthorized: false,
   },
-  options: "-c search_path=public",
 });
 
 pool.on("connect", () => {
